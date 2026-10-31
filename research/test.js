@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert');global.XLSX=require('../vendor/xlsx.full.min.js');global.fflate=require('../vendor/fflate.min.js');XLSX.readFile=p=>XLSX.read(fs.readFileSync(p));XLSX.writeFile=(w,p)=>fs.writeFileSync(p,XLSX.write(w,{type:'buffer',bookType:'xlsx'}));const core=require('../core.js');
 function walk(p){return fs.readdirSync(p,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(p,e.name)):[path.join(p,e.name)]);}
-const paths=walk('/workspace/attachments');const file=p=>({name:path.basename(p),arrayBuffer:async()=>new Uint8Array(fs.readFileSync(p))});const search=paths.find(x=>x.endsWith('.zip')),prev=paths.find(x=>x.includes('20261001_20261013')),cur=paths.find(x=>x.includes('20261014_20261026'));
+const paths=walk('/workspace/attachments');const file=p=>({name:path.basename(p),arrayBuffer:async()=>new Uint8Array(fs.readFileSync(p))});const search=paths.find(x=>x.endsWith('.zip')&&x.includes('20261001_20261026')),prev=paths.find(x=>x.includes('20261001_20261013')),cur=paths.find(x=>x.includes('20261014_20261026'));
 (async()=>{
 assert.equal(core.periodDates('2026-10-01 ~ 2026-10-14').days,14);assert.equal(core.periodDates('20261001~20261026').days,26);assert.throws(()=>core.periodDates('2026-02-30 ~ 2026-03-12'));
 await assert.rejects(()=>core.processFiles([search,prev,cur].map(file),'estimate'),/实际 13 天/);

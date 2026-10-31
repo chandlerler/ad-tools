@@ -1,7 +1,27 @@
 from pathlib import Path
 root=Path(__file__).parent
 worker='\n'.join((root/p).read_text() for p in ['vendor/xlsx.full.min.js','vendor/fflate.min.js','core.js'])
-worker+='''\nself.onmessage=async e=>{try{const result=await processFiles(e.data.files,'estimate',progress=>postMessage({progress}));const buffer=XLSX.write(result.wb,{type:'array',bookType:'xlsx',compression:true});postMessage({buffer,warnings:result.warnings,summary:result.summary},[buffer]);}catch(error){postMessage({error:error.message});}};'''
+worker+=r"""
+let pending=null;
+self.onmessage=async e=>{
+ try{
+  let result;
+  if(e.data.type==='owners'){
+   if(!pending)throw Error('文件状态已失效，请重新生成');
+   postMessage({progress:'按所选采销汇总并生成Excel…'});
+   result=finishPrepared(pending,e.data.owners);pending=null;
+  }else{
+   pending=await prepareFiles(e.data.files,progress=>postMessage({progress}));
+   if(pending.choices.length>1){
+    postMessage({chooseOwners:pending.choices});return;
+   }
+   result=finishPrepared(pending,pending.choices.length?pending.choices.map(c=>c.name):null);pending=null;
+  }
+  const buffer=XLSX.write(result.wb,{type:'array',bookType:'xlsx',compression:true});
+  postMessage({buffer,warnings:result.warnings,summary:result.summary},[buffer]);
+ }catch(error){postMessage({error:error.message});}
+};
+"""
 # Avoid accidentally terminating the embedded script block.
 worker=worker.replace('</script','<\\/script')
 out=root/'dist';out.mkdir(exist_ok=True)
