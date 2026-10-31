@@ -58,3 +58,9 @@ ZIP支持多个CSV，逐分片解压；CSV支持UTF-8及GB18030。相同内容�
 core.js 为处理逻辑，index.template.html 为界面，vendor 为随包提供的固定版本库；运行 python3 build.py 可重新生成单文件HTML。Python只用于开发构建，最终用户无需安装。
 
 第三方库：SheetJS Community Edition 0.18.5（Apache-2.0）；fflate 0.8.2（MIT）。运行过程中无外部依赖下载。
+
+## 提示“缺少 SPU ID”时
+
+搜索 CSV 必须包含 SPU ID 列。部分京准通导出只包含“智能投放推广SKU ID”，该字段是SKU编号，不能重命名为SPU ID来绕过校验。请检查导出字段是否支持加入 SPU ID；若该入口不提供此字段，需要补充可靠的 SKU→SPU 对照，并增加相应映射流程。当前版本不会按名称猜测映射，也不支持直接导入对照表。
+
+2026-10-03 至 2026-10-30 的本次搜索ZIP包含两个CSV，两者均缺少SPU ID；对应两张效果表的日期满足14天要求。程序已改进报错，显示具体分片、检测到的SKU字段和处理建议。此类文件仍会停止处理，以免将SKU错误当作SPU输出。
