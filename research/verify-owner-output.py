@@ -23,6 +23,8 @@ assert {r[0] for r in rows[1:]}==set(search)|set(effect)
 def close(a,b):assert math.isclose(a,b,rel_tol=1e-8,abs_tol=.005),(a,b)
 for row in rows[1:]:
  key=row[0];s=search.get(key,[0]*5)
+ if key not in search:
+  assert all(v is None for v in row[3:]);continue
  for j,i in [(3,0),(4,1),(7,2),(8,3)]:close(row[j],s[i])
  if key in effect:
   total=effect[key]
